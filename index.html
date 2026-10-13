@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>План проверки гипотезы</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --teal:#42A1A5; --teal-dark:#348489; --header-bg:#F2F2F2; --border:#F2F2F2; --outer-border:#cfcfcf; --text:#1f2528; --page-bg:#fff; --white:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 24px 40px; background:var(--page-bg); color:var(--text); font-family:Inter, Arial, sans-serif; font-size:18px; line-height:1.4; }
+    .table-wrapper { max-width:1600px; margin:0 auto; overflow:hidden; background:var(--white); border:1px solid var(--outer-border); }
+    table { width:100%; border-collapse:collapse; table-layout:fixed; }
+    th, td { border:1px solid var(--border); vertical-align:middle; text-align:left; }
+    th { padding:14px 16px; background:var(--header-bg); font-size:18px; font-weight:700; }
+    th:nth-child(1){width:28%} th:nth-child(2){width:26%} th:nth-child(3){width:25%} th:nth-child(4){width:21%}
+    .stage-cell { padding:0; background:var(--teal); vertical-align:middle; }
+    .stage-button { display:flex; align-items:center; width:100%; min-height:100%; padding:22px 12px; border:0; background:var(--teal); color:var(--white); font:inherit; font-weight:700; text-align:left; cursor:pointer; }
+    .stage-button:hover, .stage-button:focus-visible { background:var(--teal); outline:none; }
+    .stage-button:focus-visible { box-shadow:inset 0 0 0 3px rgba(255,255,255,.75); }
+    .details-cell { padding:0; background:var(--white); }
+    .details-content { max-height:0; padding:0 16px; overflow:hidden; opacity:0; transform:translateY(-6px); transition:max-height .3s ease, padding .3s ease, opacity .2s ease, transform .3s ease; }
+    tr.is-open .details-content { max-height:350px; padding:14px 16px; opacity:1; transform:translateY(0); }
+    p { margin:0; }
+    @media (max-width:900px) {
+      body { padding:0 16px 20px; }
+      .table-wrapper { overflow:visible; border:0; background:transparent; }
+      table, thead, tbody, tr, th, td { display:block; width:100%; }
+      thead { display:none; }
+      tbody { display:grid; gap:16px; }
+      tr { overflow:hidden; background:var(--white); border:1px solid var(--outer-border); }
+      .stage-cell { border:0; }
+      .stage-button { min-height:64px; padding:22px 16px; }
+      .details-cell { display:none; border:0; border-top:1px solid var(--border); }
+      tr.is-open .details-cell { display:block; }
+      .details-content { max-height:none; padding:0; opacity:0; transform:translateY(-6px); }
+      tr.is-open .details-content { max-height:none; padding:16px; opacity:1; transform:translateY(0); }
+      .details-cell::before { display:block; padding:12px 16px; background:var(--header-bg); color:var(--text); font-size:18px; font-weight:700; }
+      .must-cell::before { content:"Must (чтобы проверить гипотезу)"; }
+      .should-cell::before { content:"Should (усилить эффект)"; }
+      .could-cell::before { content:"Could (опционально)"; }
+    }
+  </style>
+</head>
+<body>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Шаг</th>
+          <th>Must (чтобы проверить гипотезу)</th>
+          <th>Should (усилить эффект)</th>
+          <th>Could (опционально)</th>
+        </tr>
+      </thead>
+      <tbody id="stages"></tbody>
+    </table>
+  </div>
+  <script>
+    const stages = [
+      ["1) Вытащить триггеры и лучшие формулировки из успешных звонков", "Разобрать 10 лучших звонков<br>и выписать 5–7 триггеров", "Добавить 1–2 «провальных» кейса<br>(что точно не говорить)", "Сделать библиотеку кейсов"],
+      ["2) Собрать 3 шаблона скриптов/подсказок", "Создать 3 шаблона скриптов<br>(хотя бы в документе/заметке)", "Занести скрипты в CRM<br>как подсказки", "Автоматическая подстановка данных клиента"],
+      ["3) Дать тестовой группе менеджеров использовать скрипты 2 недели", "Тест на 5 менеджерах 2 недели + фикс метрики «результативный звонок»", "Собрать обратную связь<br>и доработать формулировки", "Обучение для всей команды"],
+      ["4) Подготовить 30‑сек видео‑шаблон (структура, что говорить)", "Сделать структуру видео на 30 секунд (1 сценарий)", "2–3 варианта под сегменты", "Идеальный монтаж/графика"],
+      ["5) Записать и отправить 5 видео «тёплым» клиентам", "Записать 5 видео «тёплым»<br>клиентам и отправить", "Расширить до 20 видео", "Встроить генерацию видео<br>в процесс"],
+      ["6) Замерить конверсию в ответ/<br>встречу и сравнить с базой", "Измерить конверсию в ответ/<br>встречу за неделю", "Сравнить по сегментам", "Связать с выручкой<br>на длинном горизонте"]
+    ];
+
+    document.getElementById("stages").innerHTML = stages.map(([step, must, should, could]) => `
+      <tr>
+        <td class="stage-cell"><button class="stage-button" type="button" aria-expanded="false"><span>${step}</span></button></td>
+        <td class="details-cell must-cell"><div class="details-content"><p>${must}</p></div></td>
+        <td class="details-cell should-cell"><div class="details-content"><p>${should}</p></div></td>
+        <td class="details-cell could-cell"><div class="details-content"><p>${could}</p></div></td>
+      </tr>`).join("");
+
+    document.querySelectorAll(".stage-button").forEach(button => button.addEventListener("click", () => {
+      const row = button.closest("tr");
+      const isOpen = row.classList.toggle("is-open");
+      button.setAttribute("aria-expanded", String(isOpen));
+    }));
+  </script>
+</body>
+</html>
